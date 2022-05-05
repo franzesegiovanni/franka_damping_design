@@ -1,0 +1,15 @@
+<library path="lib/libfranka_advanced_controllers">
+  <class name="franka_advanced_controllers/CartesianImpedanceAdvancedController" type="franka_advanced_controllers::CartesianImpedanceAdvancedController" base_class_type="controller_interface::ControllerBase">
+    <description>
+
+    </description>
+  </class>
+  <class name="franka_advanced_controllers/DualArmCartesianImpedanceAdvancedController" type="franka_advanced_controllers::DualArmCartesianImpedanceAdvancedController" base_class_type="controller_interface::ControllerBase">
+      <description>
+      </description>
+  </class>
+  <class name="franka_advanced_controllers/JointImpedanceAdvancedController" type="franka_advanced_controllers::JointImpedanceAdvancedController" base_class_type="controller_interface::ControllerBase">
+    <description>
+    </description>
+  </class>
+</library>
