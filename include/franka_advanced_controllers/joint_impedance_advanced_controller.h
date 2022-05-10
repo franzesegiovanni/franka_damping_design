@@ -69,9 +69,12 @@ class JointImpedanceAdvancedController : public controller_interface::MultiInter
   std::array<double,7> goal;//{0.0,0.0,0.0,0.0,0.0,0.0,0.0};  
   Eigen::Matrix<double, 7, 1> goal_;
   std::array<double, 49> mass_goal_;
-  std::array<double, 9> total_inertia_; // dummie parameter to get goal mass matrix
-  double total_mass_={0}; // dummie parameter to get goal mass matrix
-  std::array<double, 3> F_x_Ctotal_; // dummie parameter to get goal mass matrix
+  std::array<double, 9> total_inertia_ = {{0.001, 0.0, 0.0, 0.0, 0.0025, 0.0, 0.0, 0.0, 0.0017}}; 
+  //total_inertia_ << 0.001, 0.0, 0.0, 0.0, 0.0025, 0.0, 0.0, 0.0, 0.0017; // dummie parameter to get goal mass matrix
+
+  double total_mass_ = {0.73}; // dummie parameter to get goal mass matrix
+  //double total_mass_ = {0.9}; // dummie parameter to get goal mass matrix
+  std::array<double, 3> F_x_Ctotal_ = {{-0.01, 0.0, 0.03}}; // dummie parameter to get goal mass matrix
 
   Eigen::Matrix<double, 7, 7> K_;
   Eigen::Matrix<double, 7, 7> D_;

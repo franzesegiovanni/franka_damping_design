@@ -78,16 +78,19 @@ class CartesianImpedanceAdvancedController : public controller_interface::MultiI
   Eigen::Matrix<double, 7, 1> goal_;
   std::array<double, 49> mass_goal_;
 //   std::fill(mass_goal_.begin(), mass_goal_.end(), 0.0);
-  std::array<double, 9> total_inertia_; // dummie parameter to get goal mass matrix
 //   std::fill(total_inertia_.begin(), total_inertia_.end(), 0.0);
-  double total_mass_; // dummie parameter to get goal mass matrix
 //   std::fill(total_mass_.begin(), total_mass_.end(), 0.0);
-  std::array<double, 3> F_x_Ctotal_; // dummie parameter to get goal mass matrix
 //   std::fill(F_x_Ctotal_.begin(), F_x_Ctotal_.end(), 0.0);
   std::array< double, 16 > F_T_EE;
 //   std::fill(F_T_EE.begin(), F_T_EE.end(), 0.0);
   std::array< double, 16 > EE_T_K;
 //   std::fill(EE_T_K.begin(), EE_T_K.end(), 0.0);
+  std::array<double, 9> total_inertia_ = {{0.001, 0.0, 0.0, 0.0, 0.0025, 0.0, 0.0, 0.0, 0.0017}}; 
+  //total_inertia_ << 0.001, 0.0, 0.0, 0.0, 0.0025, 0.0, 0.0, 0.0, 0.0017; // dummie parameter to get goal mass matrix
+
+  double total_mass_ = {0.73}; // dummie parameter to get goal mass matrix
+  //double total_mass_ = {0.9}; // dummie parameter to get goal mass matrix
+  std::array<double, 3> F_x_Ctotal_ = {{-0.01, 0.0, 0.03}}; // dummie parameter to get goal mass matrix
 
   std::array<double, 7> q_start_ik;
   std::array<double, 7> q_max={{2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973}};

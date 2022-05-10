@@ -16,12 +16,15 @@ class LfD():
     def __init__(self):
         rospy.init_node('LfD', anonymous=True)
         self.r=rospy.Rate(10)
+        self.step_change=0.15
         self.curr_pos=None
         self.width=None
         self.recorded_traj = None 
         self.recorded_gripper= None
         self.save_cartesian_position=None
         self.end = False
+        self.recording_state=False
+        self.recorded_experiment = None 
         self.pos_sub=rospy.Subscriber("/cartesian_pose", PoseStamped, self.ee_pos_callback)
         self.gripper_sub=rospy.Subscriber("/joint_states", JointState, self.gripper_callback)  
         self.goal_pub = rospy.Publisher('/equilibrium_pose', PoseStamped, queue_size=0)
@@ -38,6 +41,9 @@ class LfD():
     def ee_pos_callback(self, data):
         self.curr_pos = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
         self.curr_ori = np.array([data.pose.orientation.x, data.pose.orientation.y, data.pose.orientation.z, data.pose.orientation.w])
+        if self.recording_state == True:
+            self.recorded_experiment = np.c_[self.recorded_experiment, self.curr_pos]
+            self.recorded_time = np.c_[self.recorded_time, time.time()]
     def gripper_callback(self, data):
         self.width =data.position[7]+data.position[8]
 
@@ -68,8 +74,11 @@ class LfD():
                 time.sleep(0.1)
                 self.save_cartesian_position=False     
 
-        print('End of the demonstration')    
-  
+
+        print('End of the demonstration')  
+
+        np.savez('recorded_points', recorded_traj=self.recorded_traj , recorded_ori=self.recorded_ori, recorded_gripper=self.recorded_gripper)
+
     def cart_rec(self):
         trigger = 0.05
 
@@ -96,6 +105,8 @@ class LfD():
             self.r.sleep()
 
         print('End of the demonstration') 
+
+        np.savez('recorded_points', recorded_traj=self.recorded_traj , recorded_ori=self.recorded_ori, recorded_gripper=self.recorded_gripper)
 
     # control robot to desired goal position
     def go_to_start_cart(self):
@@ -153,6 +164,54 @@ class LfD():
             self.r.sleep()   
 
         self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 10.0)
+
+
+    def track_position_cartesian(self):
+        self.set_stiffness(2000.0, 2000.0, 2000.0, 30.0, 30.0, 30.0, 0.0)
+
+    def load_file(self):
+        goal_points = np.load('/home/pandarobot/Desktop/Advance_controllers_workspace/src/franka_ros/franka_advanced_controllers/python/recorded_points.npz')
+        self.recorded_traj = goal_points['recorded_traj']
+        self.recorded_ori = goal_points['recorded_ori']
+        self.recorded_gripper = goal_points['recorded_gripper']
+
+    def execute_step_change(self):
+        self.set_stiffness(400.0, 400.0, 400.0, 30.0, 30.0, 30.0, 10.0) 
+        self.recorded_experiment= self.curr_pos
+        self.recording_state = True
+        self.recorded_time=time.time()
+        goal = PoseStamped()
+
+        goal.header.seq = 1
+        goal.header.stamp = rospy.Time.now()
+        goal.header.frame_id = "map"
+
+        goal.pose.position.x = self.recorded_traj[0,0]
+        goal.pose.position.y = self.recorded_traj[1,0]
+        goal.pose.position.z = self.recorded_traj[2,0]
+
+        goal.pose.orientation.x = self.recorded_ori[0,0]
+        goal.pose.orientation.y = self.recorded_ori[1,0]
+        goal.pose.orientation.z = self.recorded_ori[2,0]
+        goal.pose.orientation.w = self.recorded_ori[3,0]
+
+        self.goal_pub.publish(goal)
+        print('goal position before step change: ', goal.pose.position)
+        goal.pose.position.x = self.recorded_traj[0,0]+ self.step_change
+        goal.pose.position.y = self.recorded_traj[1,0]+ self.step_change
+        goal.pose.position.z = self.recorded_traj[2,0]+ self.step_change
+
+        goal.pose.orientation.x = self.recorded_ori[0,0]
+        goal.pose.orientation.y = self.recorded_ori[1,0]
+        goal.pose.orientation.z = self.recorded_ori[2,0]
+        goal.pose.orientation.w = self.recorded_ori[3,0]
+        print('goal position after step change: ', goal.pose.position)
+        time.sleep(1.0)
+        self.goal_pub.publish(goal)
+        time.sleep(3.0)
+        #for i in range(np.shape(self.recorded_joint)[1]): 
+        self.recording_state = False
+        np.savez('recorded_experiments', recorded_position=self.recorded_experiment, time_stamp=self.recorded_time) 
 
     def execute_cart_points(self):
         self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 10.0)
@@ -212,7 +271,8 @@ class LfD():
 LfD=LfD()
 #%%
 LfD.cart_rec_point()  
-
+#%%
+LfD.load_file()
 #%%
 LfD.go_to_start_cart()
 
@@ -222,6 +282,10 @@ LfD.execute_cart_points()
 #%%
 LfD.cart_rec() 
 
+#%%
+LfD.track_position_cartesian()
+#%%
+LfD.execute_step_change()
 #%%
 LfD.go_to_start_cart()
 
