@@ -62,6 +62,7 @@ class CartesianImpedanceAdvancedController : public controller_interface::MultiI
   Eigen::Matrix<double, 7, 7> nullspace_damping_;
   Eigen::Matrix<double, 7, 1> q_d_nullspace_;
   Eigen::Matrix<double, 6, 6> cartesian_stiffness_target_;
+  
   Eigen::Matrix<double, 6, 6> cartesian_damping_target_;
   Eigen::Matrix<double, 7, 7> nullspace_damping_target_;
   Eigen::Matrix<double, 7, 7> nullspace_stiffness_target_;
@@ -92,6 +93,7 @@ class CartesianImpedanceAdvancedController : public controller_interface::MultiI
   std::array<double, 7> q_max={{2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973}};
   std::array<double, 7> q_min={{-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973}};
   double joint_limit_tollerance{0.05}; //three degreess
+
   // Dynamic reconfigure
   std::unique_ptr<dynamic_reconfigure::Server<franka_advanced_controllers::compliance_paramConfig>>
       dynamic_server_compliance_param_;
