@@ -144,7 +144,7 @@ void CartesianImpedanceAdvancedController::starting(const ros::Time& /*time*/) {
   q_d_= q_initial; //TODO check this
   force_torque_old.setZero();
   double time_old=ros::Time::now().toSec();
-  calculateDamping(q_d_);
+  //calculateDamping(q_d_);
   ROS_INFO_STREAM("Damping matrix is:" << cartesian_damping_target_);
   calculateDamping_NullSpace(q_d_);
   ROS_INFO_STREAM("Nullspace Damping  matrix is:" << nullspace_damping_target_);
@@ -242,8 +242,8 @@ void CartesianImpedanceAdvancedController::update(const ros::Time& /*time*/,
   Eigen::VectorXd tau_task(7), tau_nullspace(7), tau_d(7), null_vect(7), tau_joint_limit(7);
 
   // Calculate D online
-  calculateDamping(q_t_); // compute the damping before than send pose to the attractor
-  calculateDamping_NullSpace(q_t_); // compute the damping before than send pose to the attractor
+  //calculateDamping(q_t_); // compute the damping before than send pose to the attractor
+  //calculateDamping_NullSpace(q_t_); // compute the damping before than send pose to the attractor
 
 
   //robot_state.q.data()
@@ -318,10 +318,10 @@ void CartesianImpedanceAdvancedController::equilibriumStiffnessCallback(
   cartesian_stiffness_target_(i,j)=std::max(std::min(stiff_[i+j], float(4000.0)), float(0.0));
   }
     }
-  ROS_INFO_STREAM("Stiffness matrix is:" << cartesian_stiffness_target_);
+  //ROS_INFO_STREAM("Stiffness matrix is:" << cartesian_stiffness_target_);
   // calculateDamping(q_d_);
   // calculateDamping_NullSpace(q_d_);
-  ROS_INFO_STREAM("Damping matrix is:" << cartesian_damping_target_);
+  //ROS_INFO_STREAM("Damping matrix is:" << cartesian_damping_target_);
 }
 
 void CartesianImpedanceAdvancedController::complianceParamCallback(
@@ -337,6 +337,7 @@ void CartesianImpedanceAdvancedController::complianceParamCallback(
   cartesian_stiffness_rotational_target_(0,0)=config.rotational_stiffness_X;
   cartesian_stiffness_rotational_target_(1,1)=config.rotational_stiffness_Y;
   cartesian_stiffness_rotational_target_(2,2)=config.rotational_stiffness_Z;
+
   Eigen::AngleAxisd rollAngle(config.roll, Eigen::Vector3d::UnitX());
   Eigen::AngleAxisd yawAngle(config.yaw, Eigen::Vector3d::UnitZ());
   Eigen::AngleAxisd pitchAngle(config.pitch, Eigen::Vector3d::UnitY());
@@ -353,13 +354,18 @@ void CartesianImpedanceAdvancedController::complianceParamCallback(
   for (int i=0;i<3;i++)
     { for (int j=0; j<3; j++)
       {cartesian_stiffness_target_(i,j)=cartesian_stiffness_linear_target_rotated_(i,j);
-      cartesian_stiffness_target_(i+3,j+3)=cartesian_stiffness_rotational_target_rotated_(i,j);} }
+      cartesian_damping_target_(i,j)=2*config.damping_ratio_translation*sqrt(cartesian_stiffness_linear_target_(i,j));
+
+      cartesian_stiffness_target_(i+3,j+3)=cartesian_stiffness_rotational_target_rotated_(i,j);
+      cartesian_damping_target_(i+3,j+3)=2*config.damping_ratio_rotation*sqrt(cartesian_stiffness_rotational_target_(i,j));} }
   damping_ratio_translation=config.damping_ratio_translation;
   damping_ratio_rotation=config.damping_ratio_rotation;
   damping_ratio_nullspace=config.damping_ratio_nullspace;
   for (int i = 0; i < 7; i++){
-  nullspace_stiffness_target_(i,i) = config.nullspace_stiffness;}
-  calculateDamping(q_d_);
+  nullspace_stiffness_target_(i,i) = config.nullspace_stiffness;
+  
+  }
+  //calculateDamping(q_d_);
   calculateDamping_NullSpace(q_d_);
   ROS_INFO_STREAM("Stiffness matrix is:" << cartesian_stiffness_target_);
   ROS_INFO_STREAM("Damping matrix is:" << cartesian_damping_target_);
@@ -485,11 +491,11 @@ void CartesianImpedanceAdvancedController::calculateDamping(Eigen::Matrix<double
   Eigen::Matrix<double, 6, 6> K_;
   Eigen::Matrix<double, 6, 6> D_;
   //--- mass at goal ---//
-  mass_goal_ = model_handle_->getMass(goal, total_inertia_, total_mass_, F_x_Ctotal_);
-  Eigen::Map<Eigen::Matrix<double, 7, 7> > mass_goal(mass_goal_.data());
+  //mass_goal_ = model_handle_->getMass(goal, total_inertia_, total_mass_, F_x_Ctotal_);
+  //Eigen::Map<Eigen::Matrix<double, 7, 7> > mass_goal(mass_goal_.data());
   //--- mass at current state ---//
-  // std::array<double, 49> mass_array = model_handle_->getMass();
-  // Eigen::Map<Eigen::Matrix<double, 7, 7> > mass_goal(mass_goal_.data());
+  std::array<double, 49> mass_array = model_handle_->getMass();
+  Eigen::Map<Eigen::Matrix<double, 7, 7> > mass_goal(mass_goal_.data());
 
   Eigen::MatrixXd M_inv = mass_goal.inverse();
   // ROS_INFO_STREAM("M_inv:" << M_inv);
@@ -518,10 +524,17 @@ void CartesianImpedanceAdvancedController::calculateDamping(Eigen::Matrix<double
   // ROS_INFO_STREAM("sigma_mk:" << sigma_mk);
 
   Eigen::MatrixXd W = phi_mk.transpose() * U;
-
+  
+  //Eigen::MatrixXd test_m =W.transpose()* M_cart_inv.inverse()*W;
+  //Eigen::MatrixXd test_k =W.transpose()* K_*W;
+  //ROS_INFO_STREAM("test_m" << test_m);
+  //ROS_INFO_STREAM("test_k" << test_k);
+  Eigen::MatrixXd M_cart =M_cart_inv.inverse();
+  //ROS_INFO_STREAM("Mass" << M_cart);
   Eigen::Matrix<double, 6, 1> xi_n;
   Eigen::Matrix<double, 6, 1> omega_n;
   Eigen::Matrix<double, 6, 1> sigma_dn;
+  
 
   for(int k=0;k<3;k++){
     xi_n(k, 0) = damping_ratio_translation;
@@ -533,6 +546,9 @@ void CartesianImpedanceAdvancedController::calculateDamping(Eigen::Matrix<double
   omega_n(k, 0) = sqrt(sigma_mk(k, 0));
   sigma_dn(k, 0) = 2.0 * xi_n(k, 0) * omega_n(k, 0);
   }
+  //ROS_INFO_STREAM("sigma_mk" << sigma_mk);
+  //ROS_INFO_STREAM("omega_n" << omega_n);
+  //ROS_INFO_STREAM("sigma_dn" << sigma_dn);
   Eigen::MatrixXd Sigma_d = sigma_dn.asDiagonal();
 
   // ROS_INFO_STREAM("xi_n:" << xi_n);

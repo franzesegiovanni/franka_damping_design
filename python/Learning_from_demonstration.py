@@ -143,8 +143,7 @@ class LfD():
 
         self.goal_pub.publish(goal)
 
-        self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 0.0)
-
+        self.set_stiffness(600.0, 600.0, 600.0, 30.0, 30.0, 30.0, 0.0)
         goal = PoseStamped()
         for i in range(step_num):
             now = time.time()            # get the time
@@ -163,11 +162,11 @@ class LfD():
             self.goal_pub.publish(goal)
             self.r.sleep()   
 
-        self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 10.0)
+        #self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 10.0)
 
 
     def track_position_cartesian(self):
-        self.set_stiffness(2000.0, 2000.0, 2000.0, 30.0, 30.0, 30.0, 0.0)
+        self.set_stiffness(2000.0, 2000.0, 2000.0, 0.0, 0.0, 0.0, 0.0)
 
     def load_file(self):
         goal_points = np.load('/home/pandarobot/Desktop/Advance_controllers_workspace/src/franka_ros/franka_advanced_controllers/python/recorded_points.npz')
@@ -176,7 +175,7 @@ class LfD():
         self.recorded_gripper = goal_points['recorded_gripper']
 
     def execute_step_change(self):
-        self.set_stiffness(400.0, 400.0, 400.0, 30.0, 30.0, 30.0, 10.0) 
+        self.set_stiffness(400.0, 400.0, 400.0, 0.0, 0.0, 0.0, 0.0) 
         self.recorded_experiment= self.curr_pos
         self.recording_state = True
         self.recorded_time=time.time()
@@ -210,8 +209,21 @@ class LfD():
         self.goal_pub.publish(goal)
         time.sleep(3.0)
         #for i in range(np.shape(self.recorded_joint)[1]): 
-        self.recording_state = False
-        np.savez('recorded_experiments', recorded_position=self.recorded_experiment, time_stamp=self.recorded_time) 
+
+    def experiment_step(self):
+        set_K = dynamic_reconfigure.client.Client('/dynamic_reconfigure_compliance_param_node', config_callback=None)
+        damp=[0.3, 0.5, 0.7071, 1.0, 1.5]
+        for i in range(len(damp)):
+            set_K.update_configuration({"damping_ratio_translation": 1.5 }) 
+            self.go_to_start_cart()
+            #self.track_position_cartesian()
+            time.sleep(5)
+            set_K.update_configuration({"damping_ratio_translation": damp[i] })
+            self.execute_step_change()    
+            self.recording_state = False
+            np.savez('recorded_experiments_'+str(damp[i]), recorded_position=self.recorded_experiment, time_stamp=self.recorded_time) 
+    
+
 
     def execute_cart_points(self):
         self.set_stiffness(200.0, 200.0, 200.0, 30.0, 30.0, 30.0, 10.0)
@@ -240,7 +252,7 @@ class LfD():
             time.sleep(5) 
 
     def execute_cart(self):
-        self.set_stiffness(400.0, 400.0, 400.0, 30.0, 30.0, 30.0, 10.0)
+        self.set_stiffness(400.0, 400.0, 400.0, 30.0, 30.0, 30.0, 0.0)
         for i in range (self.recorded_traj.shape[1]):
             goal = PoseStamped()
 
@@ -266,7 +278,7 @@ class LfD():
             self.grip_pub.publish(grip_command) 
 
             self.r.sleep()                  
-
+    
 #%%    
 LfD=LfD()
 #%%
@@ -293,4 +305,7 @@ LfD.go_to_start_cart()
 LfD.execute_cart()
 
 # %%
+LfD.experiment_step()
 
+
+# %%
