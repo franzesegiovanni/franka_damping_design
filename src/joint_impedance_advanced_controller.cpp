@@ -420,6 +420,10 @@ void JointImpedanceAdvancedController::calculateDamping(Eigen::Matrix<double, 7,
   D_ = W_T.inverse() * Sigma_d * W.inverse();
   joint_damping_target_=D_;
   // ROS_INFO_STREAM("D:" << D_);
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(D_);
+  ROS_INFO_STREAM("D eigenvalues:" << eigensolver.eigenvalues());
+   
+  
 }
 }
   // namespace franka_advanced_controllers
