@@ -260,14 +260,17 @@ void JointImpedanceAdvancedController::equilibriumStiffnessCallback(
 
   int i = 0;
   // print all the remaining numbers
+  stiff_mat.setZero();
   for(std::vector<float>::const_iterator it = stiffness_->data.begin(); it != stiffness_->data.end(); ++it)
   {
-    stiff_[i] = *it;
+    stiff_mat[i] = *it;
     i++;
   }
+  ROS_INFO_STREAM("Stiffness vector is:" << stiff_mat);
+
   for (int i = 0; i < 7; i++){
   for (int j = 0; j < 7; j++) {
-  joint_stiffness_target_(i,j)=std::max(std::min(stiff_[i+j], float(100.0)), float(0.0));
+  joint_stiffness_target_(i,j)=stiff_mat[i+j];
   }
   }
 

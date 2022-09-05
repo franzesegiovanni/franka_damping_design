@@ -63,6 +63,7 @@ class JointImpedanceAdvancedController : public controller_interface::MultiInter
   Eigen::Matrix<double, 6, 1> force_torque;
   Eigen::Matrix<double, 6, 1> force_torque_old;
   Eigen::Matrix<float, 7, 1> stiff_;
+  Eigen::Matrix<float, 49, 1> stiff_mat;
   std::array<double, 7> q_start_ik;
   Eigen::Vector3d position_d_;
   Eigen::Quaterniond orientation_d_;

@@ -37,7 +37,7 @@ class LfD():
         self.joints=rospy.Subscriber("/joint_states", JointState, self.joint_callback)  
         self.goal_pub = rospy.Publisher('/equilibrium_pose', PoseStamped, queue_size=0)
         self.grip_pub = rospy.Publisher('/gripper_online', Float32, queue_size=0)
-        self.stiff_mat_pub_ = rospy.Publisher('/stiffness', Float32MultiArray, queue_size=0) #TODO check the name of this topic  
+        self.stiff_pub = rospy.Publisher('/stiffness', Float32MultiArray, queue_size=0) #TODO check the name of this topic  
         self.joint_pub = rospy.Publisher('/equilibrium_configuration', JointState , queue_size=0)
         self.listener = Listener(on_press=self._on_press)
         self.listener.start()
@@ -54,6 +54,12 @@ class LfD():
             self.end = True        
         if key == KeyCode.from_char('j'):
             self.save_joint_position = True  
+
+    def set_non_diag_stiffness(self, stiff):
+        stiff_des = Float32MultiArray()
+        # stiff_des.data = np.array([pos_stiff[0], pos_stiff[1], pos_stiff[2], rot_stiff[0], rot_stiff[1], rot_stiff[2], null_stiff[0]]).astype(np.float32)
+        stiff_des.data = np.array(stiff)
+        self.stiff_pub.publish(stiff_des)    
 
     def set_stiffness_joint(self, k_1, k_2, k_3, k_4, k_5, k_6, k_7):
 
@@ -209,6 +215,11 @@ class LfD():
 
     def execute_step_change(self):
         self.recording_state = True
+        # K_non_diag = np.diag([80.0, 184.0, 80.0, 76.0, 80.0, 80.0, 20.0])
+        K_non_diag = np.diag([80.0, 40.0, 80.0, 40.0, 80.0, 80.0, 20.0])
+        # K_non_diag[3, 1] = -72.0
+        # K_non_diag[1, 3] = -72.0
+        self.set_non_diag_stiffness(np.reshape(K_non_diag, -1))
         self.set_stiffness_joint(100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 20.0)
         self.recorded_experiment= np.array(self.curr_joint)
         self.recorded_time=time.time()
