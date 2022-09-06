@@ -1,5 +1,5 @@
 # FrankaAdvancedControllers
-Joint and Position Impedance Controllers for Franka Emika Panda developed at TU Delft, NL. The results were presented at Human Friendly Robotics, Delft 2022. 
+Joint and Position Impedance Controllers for Franka Emika Panda with Damping Matrix Design developed at TU Delft, NL. The results were presented at Human Friendly Robotics, Delft 2022. 
 
 If this controller was useful for your research, please cite: 
 
