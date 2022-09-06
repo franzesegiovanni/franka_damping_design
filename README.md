@@ -3,15 +3,12 @@ Joint and Position Impedance Controllers for Franka Emika Panda developed at TU 
 
 If this controller was useful for your research, please cite: 
 
-``` 
-
-'''
 
 ### How to use the controller 
 
 Install track IK:
 
-``` sudo apt-get install ros-<ros-distro>-trac-ik-kinematics-plugin '''
+``` sudo apt-get install ros-<ros-distro>-trac-ik-kinematics-plugin ```
 
 -In case you already have some versions of libfranka installed, remove them to avoid conflicts with:
 ```
