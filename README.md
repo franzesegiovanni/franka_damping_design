@@ -1,5 +1,62 @@
 # FrankaAdvancedControllers
-Extra Controllers for Control of Franka Emika Panda
+Joint and Position Impedance Controllers for Franka Emika Panda developed at TU Delft, NL. The results were presented at Human Friendly Robotics, Delft 2022. 
+
+If this controller was useful for your research, please cite: 
+
+``` 
+
+'''
+
+### How to use the controller 
+
+Install track IK:
+
+``` sudo apt-get install ros-<ros-distro>-trac-ik-kinematics-plugin '''
+
+-In case you already have some versions of libfranka installed, remove them to avoid conflicts with:
+```
+sudo apt remove "*libfranka*"
+sudo apt autoremove
+```
+Type the following commands to generate and build libfranka
+```
+cd
+sudo apt install build-essential cmake git libpoco-dev libeigen3-dev
+git clone --recursive https://github.com/frankaemika/libfranka
+cd libfranka
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+```
+
+This last comand may take several minutes. 
+
+Now create a workspace (here called catkin_ws) and install franka_ros in it
+```
+cd
+mkdir -p catkin_ws/src
+cd catkin_ws
+source /opt/ros/<ros-distro>/setup.sh
+catkin_init_workspace src
+git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros
+rosdep install --from-paths src --ignore-src --rosdistro <ros-distro> -y --skip-keys libfranka
+source devel/setup.sh
+```
+- Finally, install the controllers inside the folder "franka_ros" and build the code:
+```
+cd src/franka_ros
+git clone https://github.com/franzesegiovanni/franka_advanced_controllers.git
+cd ../..
+source /opt/ros/<ros-distro>/setup.bash
+catkin_make -DMAKE_BUILD_TYPE=Release -DFranka_DIR:PATH=~/libfranka/build
+```
+
+To run the controller:
+- Switch on your Panda robot (make sure the gripper is initialized correctly), unlock its joints (and activate the FCI if necessary).
+- Open a terminal, in every terminal: ```source devel/setup.bash```
+- ```roslaunch franka_advanced_controllers cartesian_variable_impedance_controller.launch robot_ip:=ROBOT_IP load_gripper:=True```
+- In a different terminal (don't forget to source again): ``` rosrun franka_advanced_controllers franka_gripper_online ```
 
 To make it working with the simulator, please add: 
 1. in franka_gazebo/CMakeList.txt  
@@ -32,23 +89,3 @@ cartesian_impedance_advanced_controller:
     - $(arg arm_id)_joint6
     - $(arg arm_id)_joint7
 ```
-If the robot stops during interaction because of reflex, go to change this parameters:
-in /src/franka_ros/franka_control/config/franka_control_node.yaml
-
-#Configure the initial defaults for the collision behavior reflexes.
-collision_config:
-  lower_torque_thresholds_acceleration: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [Nm]
-  
-  upper_torque_thresholds_acceleration: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [Nm]
-  
-  lower_torque_thresholds_nominal: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [Nm]
-  
-  upper_torque_thresholds_nominal: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [Nm]
-  
-  lower_force_thresholds_acceleration: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [N, N, N, Nm, Nm, Nm]
-  
-  upper_force_thresholds_acceleration: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [N, N, N, Nm, Nm, Nm] 
-  
-  lower_force_thresholds_nominal: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [N, N, N, Nm, Nm, Nm]
-  
-  upper_force_thresholds_nominal: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0]  # [N, N, N, Nm, Nm, Nm]
