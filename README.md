@@ -2,8 +2,9 @@
 Joint and Position Impedance Controllers for Franka Emika Panda with Damping Matrix Design developed at TU Delft, NL. The results were presented at Human Friendly Robotics, Delft 2022. 
 
 If this controller was useful for your research, please cite: 
-
-
+```
+Coleman, Tomás, Giovanni Franzese, and Pablo Borja. "Damping Design for Robot Manipulators." Human-Friendly Robotics 2022: HFR: 15th International Workshop on Human-Friendly Robotics. Cham: Springer International Publishing, 2023.
+```
 ### How to use the controller 
 
 Install track IK:
