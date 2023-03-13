@@ -5,6 +5,18 @@ If this controller was useful for your research, please cite:
 ```
 Coleman, Tomás, Giovanni Franzese, and Pablo Borja. "Damping Design for Robot Manipulators." Human-Friendly Robotics 2022: HFR: 15th International Workshop on Human-Friendly Robotics. Cham: Springer International Publishing, 2023.
 ```
+
+```
+@inproceedings{coleman2023damping,
+  title={Damping Design for Robot Manipulators},
+  author={Coleman, Tom{\'a}s and Franzese, Giovanni and Borja, Pablo},
+  booktitle={Human-Friendly Robotics 2022: HFR: 15th International Workshop on Human-Friendly Robotics},
+  pages={74--89},
+  year={2023},
+  organization={Springer}
+}
+```
+
 ### How to use the controller 
 
 Install track IK:
