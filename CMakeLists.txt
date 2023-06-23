@@ -35,7 +35,6 @@ generate_messages()
 generate_dynamic_reconfigure_options(
   cfg/compliance_param.cfg
   cfg/desired_mass_param.cfg
-  cfg/dual_arm_compliance_param.cfg
   cfg/compliance_joint_param.cfg		
 )
 
@@ -88,24 +87,24 @@ target_include_directories(franka_advanced_controllers PUBLIC
 )
 
 
-add_executable(franka_gripper_online
-  src/franka_gripper_online.cpp
-)
+# add_executable(franka_gripper_online
+#   src/franka_gripper_online.cpp
+# )
 
-add_dependencies(franka_gripper_online
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-  franka_gripper
-)
+# add_dependencies(franka_gripper_online
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+#   franka_gripper
+# )
 
-target_link_libraries(franka_gripper_online
-   ${catkin_LIBRARIES}
-   franka_gripper
-)
+# target_link_libraries(franka_gripper_online
+#    ${catkin_LIBRARIES}
+#    franka_gripper
+# )
 
-target_include_directories(franka_gripper_online SYSTEM PUBLIC
-  ${catkin_INCLUDE_DIRS}
-)
+# target_include_directories(franka_gripper_online SYSTEM PUBLIC
+#   ${catkin_INCLUDE_DIRS}
+# )
 
 ## Installation
 install(TARGETS franka_advanced_controllers
