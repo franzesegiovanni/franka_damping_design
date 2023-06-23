@@ -338,26 +338,48 @@ void CartesianImpedanceAdvancedController::complianceParamCallback(
   cartesian_stiffness_rotational_target_(1,1)=config.rotational_stiffness_Y;
   cartesian_stiffness_rotational_target_(2,2)=config.rotational_stiffness_Z;
 
+  Eigen::Matrix<double, 3, 3> cartesian_damping_linear_target_;
+  Eigen::Matrix<double, 3, 3> cartesian_damping_rotational_target_;
+  cartesian_damping_linear_target_.setIdentity();
+  cartesian_damping_rotational_target_.setIdentity();
+  cartesian_damping_linear_target_(0,0)=     2*config.damping_ratio_translation* sqrt(config.translational_stiffness_X);
+  cartesian_damping_linear_target_(1,1)=     2*config.damping_ratio_translation* sqrt(config.translational_stiffness_Y);
+  cartesian_damping_linear_target_(2,2)=     2*config.damping_ratio_translation* sqrt(config.translational_stiffness_Z);
+  cartesian_damping_rotational_target_(0,0)= 2* config.damping_ratio_rotation*sqrt(config.rotational_stiffness_X);
+  cartesian_damping_rotational_target_(1,1)= 2* config.damping_ratio_rotation*sqrt(config.rotational_stiffness_Y);
+  cartesian_damping_rotational_target_(2,2)= 2* config.damping_ratio_rotation*sqrt(config.rotational_stiffness_Z);
+
   Eigen::AngleAxisd rollAngle(config.roll, Eigen::Vector3d::UnitX());
   Eigen::AngleAxisd yawAngle(config.yaw, Eigen::Vector3d::UnitZ());
   Eigen::AngleAxisd pitchAngle(config.pitch, Eigen::Vector3d::UnitY());
   Eigen::Quaternion<double> q = rollAngle *  pitchAngle * yawAngle;
   Eigen::Matrix3d rotationMatrix = q.matrix();
-  ROS_INFO_STREAM("Rotation matrix is:" << rotationMatrix );
+  // ROS_INFO_STREAM("Rotation matrix is:" << rotationMatrix );
   Eigen::Matrix3d cartesian_stiffness_linear_target_rotated_;
   Eigen::Matrix3d cartesian_stiffness_rotational_target_rotated_;
+
+  Eigen::Matrix3d cartesian_damping_linear_target_rotated_;
+  Eigen::Matrix3d cartesian_damping_rotational_target_rotated_;
+  
   Eigen::Matrix3d rotationMatrix_transpose=rotationMatrix.transpose();
+
+
   cartesian_stiffness_linear_target_rotated_    =rotationMatrix*cartesian_stiffness_linear_target_*rotationMatrix_transpose;
   cartesian_stiffness_rotational_target_rotated_=rotationMatrix*cartesian_stiffness_rotational_target_*rotationMatrix_transpose;
-  ROS_INFO_STREAM("stiffness translational matrix is:" << cartesian_stiffness_linear_target_rotated_ );
-  ROS_INFO_STREAM("stiffess rotational matrix is:" << cartesian_stiffness_rotational_target_rotated_);
-  for (int i=0;i<3;i++)
-    { for (int j=0; j<3; j++)
-      {cartesian_stiffness_target_(i,j)=cartesian_stiffness_linear_target_rotated_(i,j);
-      cartesian_damping_target_(i,j)=2*config.damping_ratio_translation*sqrt(cartesian_stiffness_linear_target_(i,j));
+  // ROS_INFO_STREAM("stiffness translational matrix is:" << cartesian_stiffness_linear_target_rotated_ );
+  // ROS_INFO_STREAM("stiffess rotational matrix is:" << cartesian_stiffness_rotational_target_rotated_);
 
-      cartesian_stiffness_target_(i+3,j+3)=cartesian_stiffness_rotational_target_rotated_(i,j);
-      cartesian_damping_target_(i+3,j+3)=2*config.damping_ratio_rotation*sqrt(cartesian_stiffness_rotational_target_(i,j));} }
+  cartesian_stiffness_target_.block(0, 0, 3, 3) = cartesian_stiffness_linear_target_rotated_;
+  cartesian_stiffness_target_.block(3, 3, 6, 6) = cartesian_stiffness_rotational_target_rotated_;
+
+  cartesian_damping_linear_target_rotated_    =rotationMatrix*cartesian_damping_linear_target_*rotationMatrix_transpose;
+  cartesian_damping_rotational_target_rotated_=rotationMatrix*cartesian_damping_rotational_target_*rotationMatrix_transpose;
+  // ROS_INFO_STREAM("damping translational matrix is:" << cartesian_damping_linear_target_rotated_ );
+  // ROS_INFO_STREAM("damping rotational matrix is:" << cartesian_damping_rotational_target_rotated_);
+
+  cartesian_damping_target_.block(0, 0, 3, 3) = cartesian_damping_linear_target_rotated_;
+  cartesian_damping_target_.block(3, 3, 6, 6) = cartesian_damping_rotational_target_rotated_;
+
   damping_ratio_translation=config.damping_ratio_translation;
   damping_ratio_rotation=config.damping_ratio_rotation;
   damping_ratio_nullspace=config.damping_ratio_nullspace;
