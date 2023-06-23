@@ -65,7 +65,7 @@ catkin_make -DMAKE_BUILD_TYPE=Release -DFranka_DIR:PATH=~/libfranka/build
 To run the controller:
 - Switch on your Panda robot (make sure the gripper is initialized correctly), unlock its joints (and activate the FCI if necessary).
 - Open a terminal, in every terminal: ```source devel/setup.bash```
-- ```roslaunch franka_advanced_controllers cartesian_variable_impedance_controller.launch robot_ip:=ROBOT_IP load_gripper:=True```
+- ```roslaunch franka_advanced_controllers cartesian_impedance_advanced_controller.launch robot_ip:=ROBOT_IP load_gripper:=True```
 - In a different terminal (don't forget to source again): ``` rosrun franka_advanced_controllers franka_gripper_online ```
 
 To make it working with the simulator, please add: 
@@ -99,3 +99,7 @@ cartesian_impedance_advanced_controller:
     - $(arg arm_id)_joint6
     - $(arg arm_id)_joint7
 ```
+
+rosparam set use_sim_time false
+
+Rmeber to compile again and to set your rosmaster as the local ip.
