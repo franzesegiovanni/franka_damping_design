@@ -91,3 +91,10 @@ print("Change files in directory")
 print(file_path)
 replace_line(file_path, search_line, new_line)
 
+# add the rqt in the launch file
+file_path = os.path.join(subdirectory, 'launch/panda.launch')
+print("Change files")
+print(file_path)
+new_text='<node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" required="false" />'
+add_text(file_path, new_text)
+
